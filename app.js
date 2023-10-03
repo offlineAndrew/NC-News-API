@@ -1,28 +1,21 @@
 const express = require('express');
 const app = express();
-const {
-getTopics
-} = require('./controllers/topics-controllers');
+const { getTopics } = require('./controllers/topics-controllers');
+const { getEndpoints } = require('./controllers/endpoints-controller')
 
-
-app.use(express.json());
-
+//get topics
 
 app.get('/api/topics', getTopics);
+
+//get endpoints
+
+  app.get('/api', getEndpoints);
 
 // handling errors
 
 app.use((err, req, res, next) => {
-    console.log(err);
     res.status(500).send({msg: 'Server Error!'});
   });
-
-
-
-
-
-
-
 
 
 module.exports = app;

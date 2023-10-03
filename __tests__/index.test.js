@@ -4,6 +4,7 @@ const db = require ('../db/connection');
 const seed = require('../db/seeds/seed');
 const testData = require('../db/data/test-data');
 const { response } = require('../app');
+const endpoints = require('../endpoints.json');
 
 
 beforeEach(() => seed(testData));
@@ -21,4 +22,24 @@ test('GET: 200 sends and array of topics', () => {
         })
     })
 })
+})
+
+
+
+//endpoints test
+
+describe('/api/', () => {
+    test('GET:200 responds with and object of API endpoints', () => {
+    return request(app)
+    .get('/api')
+    .expect(200).then(({body}) => {
+    
+    expect(body).toEqual(endpoints);
+
+    for (let endpoint in body) {
+        expect(typeof body[endpoint].description).toBe('string');
+        
+    }
+    })
+    })
 })
