@@ -4,7 +4,7 @@ const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
 const testData = require("../db/data/test-data");
 const endpoints = require("../endpoints.json");
-const { response } = require("../app");
+const jestSorted = require("jest-sorted");
 
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
@@ -60,7 +60,7 @@ describe("/api/articles/:article_id", () => {
       });
   });
 
-  test("bad id gets 400", () => {
+  test("GET: 400 responds with bad id", () => {
     return request(app)
       .get("/api/articles/dog")
       .expect(400)
@@ -70,7 +70,7 @@ describe("/api/articles/:article_id", () => {
       });
   });
 
-  test("Well-formed id that does not exist gets 404", () => {
+  test("GET: 404 responds with well-formed id that does not exist", () => {
     return request(app)
       .get("/api/articles/999999")
       .expect(404)
@@ -78,5 +78,44 @@ describe("/api/articles/:article_id", () => {
         expect(response.status).toBe(404);
         expect(response.body.msg).toBe("Article doesn't exist!");
       });
+  });
+});
+
+describe.only("/api/articles", () => {
+  const getRequest = request(app).get("/api/articles");
+
+  test("GET:200 responds with an array", () => {
+    return getRequest.expect(200).then((response) => {
+      const { articles } = response.body;
+      expect(Array.isArray(articles)).toBe(true);
+    });
+  });
+
+  test("GET:200 responds with an array of objects with comment_count included", () => {
+    return getRequest.then((response) => {
+      const { articles } = response.body;
+      articles.forEach((article) => {
+        expect(article).toHaveProperty("comment_count");
+      });
+    });
+  });
+  test("comment_counts has been matched properly", () => {
+    return getRequest.then((response) => {
+      const { articles } = response.body;
+      const articleWithId3 = articles.find((article) => {
+        return article.article_id === 3;
+      });
+      expect(articleWithId3.comment_count).toBe("2");
+    });
+  });
+
+  test("GET:200 returns an array of articles sorted by created date descendingly", () => {
+    return getRequest.then((response) => {
+      const { articles } = response.body;
+      console.log(articles, "res");
+      expect(articles).toBeSortedBy("created_at", {
+        descending: true,
+      });
+    });
   });
 });
