@@ -1,4 +1,3 @@
-const { query } = require("../db/connection");
 const db = require("../db/connection");
 
 exports.fetchArticleById = (article_id) => {

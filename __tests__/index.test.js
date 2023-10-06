@@ -4,9 +4,12 @@ const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
 const testData = require("../db/data/test-data");
 const endpoints = require("../endpoints.json");
+const { response } = require("../app");
 
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
+
+// topics tests
 
 describe("/api/topics", () => {
   test("GET: 200 sends and array of topics", () => {
@@ -114,10 +117,66 @@ describe("/api/articles", () => {
   test("GET:200 returns an array of articles sorted by created date descendingly", () => {
     return getRequest.then((response) => {
       const { articles } = response.body;
-      console.log(articles, "res");
       expect(articles).toBeSortedBy("created_at", {
         descending: true,
       });
     });
+  });
+});
+
+// comments tests
+
+describe("/api/articles/:article_id/comments", () => {
+  test("GET:200 responds with all article comments sorted by created_at desc", () => {
+    return request(app)
+      .get("/api/articles/1/comments")
+      .expect(200)
+      .then((response) => {
+        const comments = response.body;
+        expect(comments).toBeSortedBy("created_at", {
+          descending: true,
+        });
+
+        comments.forEach((comment) => {
+          expect(comment).toMatchObject({
+            comment_id: expect.any(Number),
+            body: expect.any(String),
+            article_id: expect.any(Number),
+            author: expect.any(String),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+          });
+        });
+      });
+  });
+
+  test("GET:200 sends an empty array if there is no comments", () => {
+    return request(app)
+      .get("/api/articles/2/comments")
+      .expect(200)
+      .then((response) => {
+        const comments = response.body;
+        expect(comments.length).toBe(0);
+      });
+  });
+
+  test("GET: 400 responds with bad id", () => {
+    return request(app)
+      .get("/api/articles/dog/comments")
+      .expect(400)
+      .then((response) => {
+        expect(response.status).toBe(400);
+        expect(response.body.msg).toBe("Invalid input");
+      });
+  });
+
+  test("GET: 404 responds with well-formed id that does not exist", () => {
+    return request(app)
+      .get("/api/articles/999999/comments")
+      .expect(404)
+      .then((response) => {
+        expect(response.status).toBe(404);
+        expect(response.body.msg).toBe("Article doesn't exist!");
+      });
   });
 });
