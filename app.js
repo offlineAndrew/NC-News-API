@@ -2,7 +2,10 @@ const express = require("express");
 const app = express();
 const { getTopics } = require("./controllers/topics-controllers");
 const { getEndpoints } = require("./controllers/endpoints-controller");
-const { getArticleById } = require("./controllers/articles.controller");
+const {
+  getArticleById,
+  getArticles,
+} = require("./controllers/articles.controller");
 
 //get topics
 
@@ -16,28 +19,31 @@ app.get("/api", getEndpoints);
 
 app.get("/api/articles/:article_id", getArticleById);
 
+// get articles
+
+app.get("/api/articles", getArticles);
+
 // handling errors
 
-app.all('*', (req, res, next) => {
-  res.status(404).send({msg: 'Path not found!'})
-})
+app.all("*", (req, res, next) => {
+  res.status(404).send({ msg: "Path not found!" });
+});
 
 app.use((err, req, res, next) => {
-  console.log(err);
   if (err.status) {
     res.status(err.status).send({ msg: err.msg });
   } else next(err);
 });
 
 app.use((err, req, res, next) => {
-  if (err.code === '22P02') {
-    res.status(400).send({ msg: 'Invalid input' });
+  if (err.code === "22P02") {
+    res.status(400).send({ msg: "Invalid input" });
   } else next(err);
 });
 
 app.use((err, req, res, next) => {
   console.log(err);
-  res.status(500).send({ msg: 'Internal Server Error' });
+  res.status(500).send({ msg: "Internal Server Error" });
 });
 
 module.exports = app;
