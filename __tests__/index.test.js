@@ -4,7 +4,6 @@ const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
 const testData = require("../db/data/test-data");
 const endpoints = require("../endpoints.json");
-const jestSorted = require("jest-sorted");
 
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
@@ -81,21 +80,24 @@ describe("/api/articles/:article_id", () => {
   });
 });
 
-describe.only("/api/articles", () => {
+describe("/api/articles", () => {
   const getRequest = request(app).get("/api/articles");
-
-  test("GET:200 responds with an array", () => {
-    return getRequest.expect(200).then((response) => {
-      const { articles } = response.body;
-      expect(Array.isArray(articles)).toBe(true);
-    });
-  });
 
   test("GET:200 responds with an array of objects with comment_count included", () => {
     return getRequest.then((response) => {
       const { articles } = response.body;
       articles.forEach((article) => {
-        expect(article).toHaveProperty("comment_count");
+        expect(article).toMatchObject({
+          article_id: expect.any(Number),
+          title: expect.any(String),
+          topic: expect.any(String),
+          author: expect.any(String),
+          created_at: expect.any(String),
+          votes: expect.any(Number),
+          article_img_url: expect.any(String),
+          comment_count: expect.any(String),
+        });
+        expect(article).not.toHaveProperty("body");
       });
     });
   });

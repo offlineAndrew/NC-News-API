@@ -22,10 +22,9 @@ exports.fetchArticles = () => {
     ORDER BY articles.created_at DESC;`;
 
   return db.query(query).then((result) => {
-    console.log(result.rows);
     if (result.rows.length === 0) {
-      return Promise.reject({ status: 404 });
-    } 
-      return result.rows;
+      return Promise.reject({ status: 404, msg: "Page not found!" });
+    }
+    return result.rows;
   });
 };
