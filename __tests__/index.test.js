@@ -159,4 +159,24 @@ describe("/api/articles/:article_id/comments", () => {
         expect(comments.length).toBe(0);
       });
   });
+
+  test("GET: 400 responds with bad id", () => {
+    return request(app)
+      .get("/api/articles/dog/comments")
+      .expect(400)
+      .then((response) => {
+        expect(response.status).toBe(400);
+        expect(response.body.msg).toBe("Invalid input");
+      });
+  });
+
+  test("GET: 404 responds with well-formed id that does not exist", () => {
+    return request(app)
+      .get("/api/articles/999999/comments")
+      .expect(404)
+      .then((response) => {
+        expect(response.status).toBe(404);
+        expect(response.body.msg).toBe("Article doesn't exist!");
+      });
+  });
 });
