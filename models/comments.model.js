@@ -16,8 +16,9 @@ exports.fetchComments = (article_id) => {
     });
 };
 
-exports.addComment = (article_id, { author, body }) => {
-  if (!author) {
+exports.addComment = (article_id, { username, body }) => {
+  ;
+  if (!username) {
     return Promise.reject({
       status: 400,
       msg: "Username is required!",
@@ -30,11 +31,12 @@ exports.addComment = (article_id, { author, body }) => {
   }
   return fetchArticleById(article_id).then(() => {
     db.query(
-      `INSERT INTO comments (article_id, author, comment)
+      `INSERT INTO comments (article_id, author, body)
       VALUES ($1, $2, $3)
       RETURNING *;`,
-      [article_id, author, body]
-    ).then(({ rows }) => rows[0]);
+      [article_id, username, body]
+    ).then(({ rows }) => {
+      return rows[0]});
   });
 };
 

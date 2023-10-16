@@ -180,21 +180,19 @@ describe("/api/articles/:article_id/comments", () => {
   });
 });
 
-test("POST: 201 creates a new comment", () => {
+test.only("POST: 201 creates a new comment", () => {
   const newComment = {
-    username: "bred_sheeran",
-    comment: "Bar is the best place to find love"
+    username: "butter_bridge",
+    body: "Bar is the best place to find love"
   };
   
   return request(app)
     .post("/api/articles/12/comments")
     .send(newComment)
     .expect(201)
-    .then((response) => {
-     
-      console.log(response.body, "response body");
-
-      expect(response.body).toMatchObject(newComment);
+    .then(({response}) => {
+      console.log({response}, "response");
+      expect(response).toMatchObject(newComment);
     });
 });
 
@@ -204,12 +202,13 @@ test("PATCH: 200 responds with updated article", () => {
   .send({ inc_votes : 1 })
   .expect(200)
   .then((response) => {
+    console.log(response.body, "");
     expect(response.body.votes).toBe(101);
   });
 });
 
 
-describe.only("/api/comments/:comment_id", () => {
+describe("/api/comments/:comment_id", () => {
 
 test("DELETE: 204 responds with no comment", () => {
 return request(app)

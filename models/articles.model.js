@@ -28,7 +28,6 @@ exports.fetchArticles = () => {
   });
 };
 
-
 exports.updateArticles = (article_id, inc_votes) => {
   return db
   .query("UPDATE articles SET votes = votes + $1 WHERE article_id = $2;", [
