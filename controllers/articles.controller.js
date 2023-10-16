@@ -19,3 +19,13 @@ exports.getArticles = (req, res, next) => {
       next(err);
     });
 };
+
+exports.patchArticles = (req, res, next) => {
+  const { article_id } = req.params;
+  const { inc_votes } = req.body;
+  return updateArticles(article_id, inc_votes)
+   .then((response) => {
+      res.status(200).send({ article: response.article });
+    })
+   .catch((err) => next(err));
+}
