@@ -84,43 +84,92 @@ describe("/api/articles/:article_id", () => {
 });
 
 describe("/api/articles", () => {
-
   test("GET:200 responds with an array of objects with comment_count included", () => {
-    return request(app).get("/api/articles").then((response) => {
-      const { articles } = response.body;
-      articles.forEach((article) => {
-        expect(article).toMatchObject({
-          article_id: expect.any(Number),
-          title: expect.any(String),
-          topic: expect.any(String),
-          author: expect.any(String),
-          created_at: expect.any(String),
-          votes: expect.any(Number),
-          article_img_url: expect.any(String),
-          comment_count: expect.any(String),
+    return request(app)
+      .get("/api/articles")
+      .then((response) => {
+        const { articles } = response.body;
+        articles.forEach((article) => {
+          expect(article).toMatchObject({
+            article_id: expect.any(Number),
+            title: expect.any(String),
+            topic: expect.any(String),
+            author: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(String),
+          });
+          expect(article).not.toHaveProperty("body");
         });
-        expect(article).not.toHaveProperty("body");
       });
-    });
   });
   test("comment_counts has been matched properly", () => {
-    return request(app).get("/api/articles").then((response) => {
-      const { articles } = response.body;
-      const articleWithId3 = articles.find((article) => {
-        return article.article_id === 3;
+    return request(app)
+      .get("/api/articles")
+      .then((response) => {
+        const { articles } = response.body;
+        const articleWithId3 = articles.find((article) => {
+          return article.article_id === 3;
+        });
+        expect(articleWithId3.comment_count).toBe("2");
       });
-      expect(articleWithId3.comment_count).toBe("2");
-    });
   });
 
   test("GET:200 returns an array of articles sorted by created date descendingly", () => {
-    return request(app).get("/api/articles").then((response) => {
-      const { articles } = response.body;
-      expect(articles).toBeSortedBy("created_at", {
-        descending: true,
+    return request(app)
+      .get("/api/articles")
+      .then((response) => {
+        const { articles } = response.body;
+        expect(articles).toBeSortedBy("created_at", {
+          descending: true,
+        });
       });
-    });
   });
+});
+
+describe("patch article", () => {
+  test("PATCH: 200 responds with updated article", () => {
+    return request(app)
+      .patch("/api/articles/1/")
+      .send({ inc_votes: 1 })
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.response.votes).toBe(101);
+      });
+  });
+
+  test("PATCH: 400 responds with bad input", () => {
+    return request(app)
+      .patch("/api/articles/dog/")
+      .send({ inc_votes: "1" })
+      .expect(400)
+      .then((response) => {
+        expect(response.status).toBe(400);
+        expect(response.body.msg).toBe("Invalid input");
+      });
+  });
+  test("PATCH: 404 responds with well-formed id that does not exist", () => {
+    return request(app)
+      .patch("/api/articles/999999/")
+      .send({ inc_votes: 1 })
+      .expect(404)
+      .then((response) => {
+        expect(response.status).toBe(404);
+        expect(response.body.msg).toBe("Article doesn't exist!");
+      });
+  });
+});
+
+test("PATCH: 400 responds when inc_votes is not a number", () => {
+  return request(app)
+    .patch("/api/articles/1/")
+    .send({ inc_votes: "one" })
+    .expect(400)
+    .then((response) => {
+      expect(response.status).toBe(400);
+      expect(response.body.msg).toBe("Input should be a number!");
+    });
 });
 
 // comments tests
@@ -182,60 +231,115 @@ describe("/api/articles/:article_id/comments", () => {
 
 test("POST: 201 creates a new comment", () => {
   const newComment = {
-    username: "bred_sheeran",
-    comment: "Bar is the best place to find love"
+    username: "butter_bridge",
+    body: "Bar is the best place to find love",
   };
-  
+
   return request(app)
     .post("/api/articles/12/comments")
     .send(newComment)
     .expect(201)
-    .then((response) => {
-     
-      console.log(response.body, "response body");
-
-      expect(response.body).toMatchObject(newComment);
+    .then(({ body }) => {
+      expect(body.comment).toMatchObject(newComment);
     });
 });
 
-test("PATCH: 200 responds with updated article", () => {
+test("POST:201 ignores unnecessary properties", () => {
+  const newComment = {
+    username: "butter_bridge",
+    body: "Bar is the best place to find love",
+    cheese: "cheddar",
+    ham: "ham",
+  };
+
   return request(app)
-  .patch("/api/articles/1/")
-  .send({ inc_votes : 1 })
-  .expect(200)
-  .then((response) => {
-    expect(response.body.votes).toBe(101);
-  });
+    .post("/api/articles/12/comments")
+    .send(newComment)
+    .expect(201);
 });
 
+test("POST: 400 responds with bad input", () => {
+  const newComment = {
+    username: "butter_bridge",
+    body: "Bar is the best place to find love",
+  };
 
-describe.only("/api/comments/:comment_id", () => {
-
-test("DELETE: 204 responds with no comment", () => {
-return request(app)
- .delete("/api/comments/1")
- .expect(204);
-});
-
-test("DELETE: 400 responds with bad id", () => {
-return request(app)
-.delete("/api/comments/dog")
-.expect(400)
-.then((response) => {
-  expect(response.status).toBe(400);
-  expect(response.body.msg).toBe("Invalid input");
-});
-});
-
-test("DELETE: 404 responds with well-formed id that does not exist", () => {
   return request(app)
-    .delete("/api/comments/999999")
+    .post("/api/articles/dog/comments")
+    .send(newComment)
+    .expect(400)
+    .then((response) => {
+      expect(response.status).toBe(400);
+      expect(response.body.msg).toBe("Invalid input");
+    });
+});
+
+test("POST: 404 responds with well-formed id that does not exist", () => {
+  const newComment = {
+    username: "butter_bridge",
+    body: "Bar is the best place to find love",
+  };
+  return request(app)
+    .post("/api/articles/999999/comments")
+    .send(newComment)
     .expect(404)
     .then((response) => {
       expect(response.status).toBe(404);
-      expect(response.body.msg).toBe("Comment doesn't exist!"); 
+      expect(response.body.msg).toBe("Article doesn't exist!");
     });
 });
 
+test("POST: 400 responds with missing body", () => {
+  const newComment = {
+    username: "butter_bridge",
+  };
+  return request(app)
+    .post("/api/articles/12/comments")
+    .send(newComment)
+    .expect(400)
+    .then((response) => {
+      expect(response.status).toBe(400);
+      expect(response.body.msg).toBe("Comment is required!");
+    });
+});
 
+test("POST:404 responds when username does not exist", () => {
+  const newComment = {
+    username: "bred_sheeran",
+    body: "Bar is the best place to find love",
+  };
+  return request(app)
+    .post("/api/articles/12/comments")
+    .send(newComment)
+    .expect(404)
+    .then((response) => {
+      expect(response.status).toBe(404);
+      expect(response.body.msg).toBe("Username doesn't exist!");
+    });
+});
+
+describe("Delete comments", () => {
+  test("DELETE: 204 responds with no comment", () => {
+    return request(app).delete("/api/comments/1").expect(204);
+  });
+
+  test("DELETE: 400 responds with bad id", () => {
+    return request(app)
+      .delete("/api/comments/dog")
+      .expect(400)
+      .then((response) => {
+        expect(response.status).toBe(400);
+        expect(response.body.msg).toBe("Invalid input");
+      });
+  });
+
+  test("DELETE: 404 responds with well-formed id that does not exist", () => {
+    return request(app)
+      .delete("/api/comments/999999")
+      .expect(404)
+      .then((response) => {
+        expect(response.status).toBe(404);
+        expect(response.body.msg).toBe("Comment doesn't exist!");
+      });
+  });
 });

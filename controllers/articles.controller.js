@@ -1,5 +1,9 @@
 const articles = require("../db/data/test-data/articles");
-const { fetchArticleById, fetchArticles } = require("../models/articles.model");
+const {
+  fetchArticleById,
+  fetchArticles,
+  updateArticles,
+} = require("../models/articles.model");
 
 exports.getArticleById = (req, res, next) => {
   const { article_id } = req.params;
@@ -24,8 +28,8 @@ exports.patchArticles = (req, res, next) => {
   const { article_id } = req.params;
   const { inc_votes } = req.body;
   return updateArticles(article_id, inc_votes)
-   .then((response) => {
-      res.status(200).send({ article: response.article });
+    .then((response) => {
+      res.status(200).send({ response });
     })
-   .catch((err) => next(err));
-}
+    .catch((err) => next(err));
+};
