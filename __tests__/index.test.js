@@ -4,7 +4,6 @@ const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
 const testData = require("../db/data/test-data");
 const endpoints = require("../endpoints.json");
-const { response } = require("../app");
 
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
@@ -340,6 +339,28 @@ describe("Delete comments", () => {
       .then((response) => {
         expect(response.status).toBe(404);
         expect(response.body.msg).toBe("Comment doesn't exist!");
+      });
+  });
+});
+
+// users tests
+
+describe("/api/users", () => {
+  test("GET:200 responds with all users", () => {
+    return request(app)
+      .get("/api/users")
+      .expect(200)
+      .then((response) => {
+        const { users } = response.body;
+
+        expect(users.length).toBe(4);
+        users.forEach((user) => {
+          expect.objectContaining({
+            username: expect.any(String),
+            name: expect.any(String),
+            avatar_url: expect.any(String),
+          });
+        });
       });
   });
 });
