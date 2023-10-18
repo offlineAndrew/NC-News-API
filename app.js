@@ -4,12 +4,12 @@ const { getEndpoints } = require("./controllers/endpoints-controller");
 const {
   getArticleById,
   getArticles,
-  patchArticles
+  patchArticles,
 } = require("./controllers/articles.controller");
 const {
   getComments,
   postComments,
-  deleteComments
+  deleteComments,
 } = require("./controllers/comments.controller");
 
 const app = express();
@@ -41,7 +41,7 @@ app.post("/api/articles/:article_id/comments", postComments);
 
 //patch Articles
 
-app.patch("/api/articles/:article_id", patchArticles)
+app.patch("/api/articles/:article_id", patchArticles);
 
 //delete comments
 
@@ -60,13 +60,16 @@ app.use((err, req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
+  console.log(err, "psql err");
   if (err.code === "22P02") {
     res.status(400).send({ msg: "Invalid input" });
+  } else if (err.code === "23503") {
+    res.status(404).send({ msg: "Username doesn't exist!" });
   } else next(err);
 });
 
 app.use((err, req, res, next) => {
-  console.log(err);
+  console.log(err, "500 error");
   res.status(500).send({ msg: "Internal Server Error" });
 });
 

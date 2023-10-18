@@ -29,15 +29,18 @@ exports.fetchArticles = () => {
 };
 
 exports.updateArticles = (article_id, inc_votes) => {
+  if (isNaN(inc_votes)) {
+    return Promise.reject({ status: 400, msg: "Input should be a number!" });
+  }
   return db
-  .query("UPDATE articles SET votes = votes + $1 WHERE article_id = $2;", [
-      inc_votes,
-      article_id,
-    ])
-  .then((result) => {
+    .query(
+      "UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *;",
+      [inc_votes, article_id]
+    )
+    .then((result) => {
       if (result.rowCount === 0) {
         return Promise.reject({ status: 404, msg: "Article doesn't exist!" });
       }
-      return { article: result.rows[0] };
+      return result.rows[0];
     });
 };

@@ -1,5 +1,9 @@
 const { response } = require("../app");
-const { fetchComments, addComment,deleteComment } = require("../models/comments.model");
+const {
+  fetchComments,
+  addComment,
+  deleteComment,
+} = require("../models/comments.model");
 
 exports.getComments = (req, res, next) => {
   const { article_id } = req.params;
@@ -12,19 +16,18 @@ exports.getComments = (req, res, next) => {
 
 exports.postComments = (req, res, next) => {
   const { article_id } = req.params;
-   addComment(article_id, req.body)
-    .then((comment) => {
-      console.log(req.body, "comment");
-      res.status(201).send({ comment });
+  addComment(article_id, req.body)
+    .then(({ comment }) => {
+      res.status(201).send({ comment: req.body });
     })
     .catch((err) => next(err));
 };
 
 exports.deleteComments = (req, res, next) => {
   const { comment_id } = req.params;
-    return deleteComment(comment_id)
-     .then((comment) => {
-        res.status(204).send({ comment });
-      })
-     .catch((err) => next(err));
+  return deleteComment(comment_id)
+    .then((comment) => {
+      res.status(204).send({ comment });
+    })
+    .catch((err) => next(err));
 };
