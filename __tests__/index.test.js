@@ -171,6 +171,36 @@ test("PATCH: 400 responds when inc_votes is not a number", () => {
     });
 });
 
+//topics tests
+describe("/api/articles?topic=mitch", () => {
+  test("GET:200 responds with and array of articles filtered by topic", () => {
+    return request(app)
+      .get("/api/articles?topic=mitch")
+      .expect(200)
+      .then((response) => {
+        const { articles } = response.body;
+        expect(articles.length).toBe(12);
+        articles.forEach((article) => {
+          expect(article.topic).toBe("mitch");
+        });
+      });
+  });
+});
+
+test.only("GET:200 responds with an empty array if there are no articles with that topic", () => {
+  return request(app)
+    .get("/api/articles?topic=paper")
+    .expect(200)
+    .then((response) => {
+      const { articles } = response.body;
+      expect(articles.length).toBe(0);
+    });
+});
+
+test("GET:404 responds if no topic exists", () => {
+  return request(app).get("/api/articles?topic=bananas").expect(404);
+});
+
 // comments tests
 
 describe("/api/articles/:article_id/comments", () => {

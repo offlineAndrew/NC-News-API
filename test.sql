@@ -7,5 +7,4 @@
     -- GROUP BY articles.article_id
     -- ORDER BY articles.created_at DESC;
 
-    SELECT * FROM users
-WHERE username = 'rogrsop';
+    SELECT * FROM topics;
