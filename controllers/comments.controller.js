@@ -1,9 +1,9 @@
-const { response } = require("../app");
+const { response } = require('../app');
 const {
   fetchComments,
   addComment,
   deleteComment,
-} = require("../models/comments.model");
+} = require('../models/comments.model');
 
 exports.getComments = (req, res, next) => {
   const { article_id } = req.params;
