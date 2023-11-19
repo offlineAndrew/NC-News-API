@@ -1,11 +1,12 @@
-const db = require("../db/connection");
-const { fetchArticleById } = require("../models/articles.model");
+const db = require('../db/connection');
+const { fetchArticleById } = require('../models/articles.model');
 
 exports.fetchComments = (article_id) => {
   return fetchArticleById(article_id)
     .then(() => {
       return db.query(
-        `SELECT * from comments
+        `SELECT *
+         from comments
         WHERE article_id = $1
         ORDER BY created_at DESC;`,
         [article_id]
@@ -20,12 +21,12 @@ exports.addComment = (article_id, { username, body }) => {
   if (!username) {
     return Promise.reject({
       status: 400,
-      msg: "Username is required!",
+      msg: 'Username is required!',
     });
   } else if (!body) {
     return Promise.reject({
       status: 400,
-      msg: "Comment is required!",
+      msg: 'Comment is required!',
     });
   }
   return fetchArticleById(article_id).then(() => {
@@ -37,7 +38,7 @@ exports.addComment = (article_id, { username, body }) => {
         [article_id, username, body]
       )
       .then(({ rows }) => {
-        console.log(rows[0], "rows");
+        console.log(rows[0], 'rows');
         return { comment: rows[0] };
       });
   });
