@@ -41,7 +41,7 @@ describe('/api/', () => {
 //articles tests
 
 describe('/api/articles/:article_id', () => {
-  test("GET: 200 responds with and article by it's id with correct keys", () => {
+  test.only("GET: 200 responds with and article by it's id with correct keys", () => {
     return request(app)
       .get('/api/articles/5')
       .expect(200)
@@ -56,6 +56,7 @@ describe('/api/articles/:article_id', () => {
           body: expect.any(String),
           created_at: expect.any(String),
           votes: expect.any(Number),
+          comments_count: expect.any(Number),
           article_img_url: expect.any(String),
         });
       });
